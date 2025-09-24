@@ -1,4 +1,4 @@
-name: Auto-Deploy Social Media Platform
+name: Deploy to Vercel
 
 on:
   push:
@@ -61,7 +61,7 @@ jobs:
         retention-days: 30
 
   # Deploy frontend to Vercel
-  deploy-frontend:
+  deploy:
     needs: backend
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
@@ -98,135 +98,13 @@ jobs:
         working-directory: ./social-frontend
         vercel-args: '--prod'
 
-    - name: Get Vercel URL
+    - name: Get deployment URL
       id: vercel-url
       run: |
         echo "url=https://${{ secrets.VERCEL_PROJECT_ID }}.vercel.app" >> $GITHUB_OUTPUT
 
-  # Deploy backend to Railway
-  deploy-backend:
-    needs: backend
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download backend artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: backend-jar
-        path: ./artifacts/backend
-
-    - name: Deploy to Railway
-      uses: railwayapp/railway-deploy@v1
-      with:
-        railway-token: ${{ secrets.RAILWAY_TOKEN }}
-        service: ${{ secrets.RAILWAY_SERVICE_NAME }}
-
-    - name: Get Railway URL
-      id: railway-url
+    - name: Show deployment URL
       run: |
-        echo "url=https://${{ secrets.RAILWAY_SERVICE_NAME }}.railway.app" >> $GITHUB_OUTPUT
-
-  # Deploy to Netlify (Alternative frontend option)
-  deploy-netlify:
-    needs: backend
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: social-frontend/package-lock.json
-
-    - name: Install frontend dependencies
-      working-directory: ./social-frontend
-      run: npm ci
-
-    - name: Build frontend
-      working-directory: ./social-frontend
-      run: npm run build
-
-    - name: Deploy to Netlify
-      uses: nwtgck/actions-netlify@v3.0
-      with:
-        publish-dir: './social-frontend/dist'
-        production-branch: main
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        deploy-message: "Deploy from GitHub Actions"
-        enable-pull-request-comment: false
-        enable-commit-comment: true
-        overwrites-pull-request-comment: true
-      env:
-        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
-        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-
-  # Deploy to Render (Alternative backend option)
-  deploy-render:
-    needs: backend
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Download backend artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: backend-jar
-        path: ./artifacts/backend
-
-    - name: Deploy to Render
-      uses: johnbeynon/render-deploy-action@v0.0.8
-      with:
-        service-id: ${{ secrets.RENDER_SERVICE_ID }}
-        api-key: ${{ secrets.RENDER_API_KEY }}
-
-  # Notify deployment success
-  notify:
-    needs: [deploy-frontend, deploy-backend, deploy-netlify, deploy-render]
-    runs-on: ubuntu-latest
-    if: always() && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-
-    steps:
-    - name: Deployment Status
-      run: |
-        echo "🎉 Deployment Status Report:"
-        echo "================================"
-        
-        if [ "${{ needs.deploy-frontend.result }}" == "success" ]; then
-          echo "✅ Frontend deployed to Vercel: https://${{ secrets.VERCEL_PROJECT_ID }}.vercel.app"
-        else
-          echo "❌ Frontend Vercel deployment failed"
-        fi
-        
-        if [ "${{ needs.deploy-netlify.result }}" == "success" ]; then
-          echo "✅ Frontend deployed to Netlify: https://${{ secrets.NETLIFY_SITE_ID }}.netlify.app"
-        else
-          echo "❌ Frontend Netlify deployment failed"
-        fi
-        
-        if [ "${{ needs.deploy-backend.result }}" == "success" ]; then
-          echo "✅ Backend deployed to Railway: https://${{ secrets.RAILWAY_SERVICE_NAME }}.railway.app"
-        else
-          echo "❌ Backend Railway deployment failed"
-        fi
-        
-        if [ "${{ needs.deploy-render.result }}" == "success" ]; then
-          echo "✅ Backend deployed to Render: https://${{ secrets.RENDER_SERVICE_ID }}.onrender.com"
-        else
-          echo "❌ Backend Render deployment failed"
-        fi
-        
-        echo ""
-        echo "🔗 Your Social Media Platform is now live!"
-        echo "📱 Check the URLs above to access your application"
+        echo "🎉 Deployment successful!"
+        echo "🌐 Your app is live at: https://${{ secrets.VERCEL_PROJECT_ID }}.vercel.app"
+        echo "📱 Social Media Platform is now accessible worldwide!"
