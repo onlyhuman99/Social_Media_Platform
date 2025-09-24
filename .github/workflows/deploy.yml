@@ -1,8 +1,8 @@
-name: Deploy to Vercel
+name: Build and Test Social Media Platform
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
   pull_request:
     branches: [ main, master ]
 
@@ -60,11 +60,14 @@ jobs:
         path: social-backend/target/*.war
         retention-days: 30
 
-  # Deploy frontend to Vercel
-  deploy:
-    needs: backend
+    - name: Backend build success
+      run: |
+        echo "✅ Backend build completed successfully!"
+        echo "📦 JAR file created and uploaded as artifact"
+
+  # Build and test frontend
+  frontend:
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
 
     steps:
     - name: Checkout code
@@ -89,22 +92,28 @@ jobs:
       working-directory: ./social-frontend
       run: npm run build
 
-    - name: Deploy to Vercel
-      uses: amondnet/vercel-action@v25
+    - name: Upload frontend artifacts
+      uses: actions/upload-artifact@v4
       with:
-        vercel-token: ${{ secrets.VERCEL_TOKEN }}
-        vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-        vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-        working-directory: ./social-frontend
-        vercel-args: '--prod'
+        name: frontend-build
+        path: social-frontend/dist/
+        retention-days: 30
 
-    - name: Get deployment URL
-      id: vercel-url
+    - name: Frontend build success
       run: |
-        echo "url=https://${{ secrets.VERCEL_PROJECT_ID }}.vercel.app" >> $GITHUB_OUTPUT
+        echo "✅ Frontend build completed successfully!"
+        echo "📦 Build files uploaded as artifact"
 
-    - name: Show deployment URL
+  # Build success notification
+  build-success:
+    needs: [backend, frontend]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Build completion notification
       run: |
-        echo "🎉 Deployment successful!"
-        echo "🌐 Your app is live at: https://${{ secrets.VERCEL_PROJECT_ID }}.vercel.app"
-        echo "📱 Social Media Platform is now accessible worldwide!"
+        echo "🎉 All builds completed successfully!"
+        echo "✅ Backend: Spring Boot JAR built and tested"
+        echo "✅ Frontend: React app built and linted"
+        echo "📦 Artifacts available for download in Actions tab"
+        echo "🚀 Social Media Platform is ready for deployment!"
