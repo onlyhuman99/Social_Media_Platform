@@ -1,14 +1,10 @@
-name: Deploy Social Media Platform
+name: CI/CD Pipeline - Social Media Platform
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, develop ]
   pull_request:
     branches: [ main, master ]
-
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   # Build and test backend
@@ -57,21 +53,17 @@ jobs:
       working-directory: ./social-backend
       run: mvn clean package -DskipTests
 
-    - name: Build Docker image for backend
-      run: |
-        docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }} \
-          -f social-backend/Dockerfile social-backend/
-
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
+    - name: Upload backend artifacts
+      uses: actions/upload-artifact@v4
       with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        name: backend-jar
+        path: social-backend/target/*.war
+        retention-days: 30
 
-    - name: Push backend image
+    - name: Backend build success
       run: |
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}
+        echo "✅ Backend build completed successfully!"
+        echo "📦 JAR file created and uploaded as artifact"
 
   # Build and test frontend
   frontend:
@@ -92,7 +84,7 @@ jobs:
       working-directory: ./social-frontend
       run: npm ci
 
-    - name: Run frontend tests
+    - name: Run frontend linting
       working-directory: ./social-frontend
       run: npm run lint
 
@@ -100,21 +92,17 @@ jobs:
       working-directory: ./social-frontend
       run: npm run build
 
-    - name: Build Docker image for frontend
-      run: |
-        docker build -t ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }} \
-          -f social-frontend/Dockerfile social-frontend/
-
-    - name: Log in to Container Registry
-      uses: docker/login-action@v3
+    - name: Upload frontend artifacts
+      uses: actions/upload-artifact@v4
       with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        name: frontend-build
+        path: social-frontend/dist/
+        retention-days: 30
 
-    - name: Push frontend image
+    - name: Frontend build success
       run: |
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}
+        echo "✅ Frontend build completed successfully!"
+        echo "📦 Build files uploaded as artifact"
 
   # Deploy to production (only on main branch)
   deploy:
@@ -126,19 +114,34 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Download backend artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: backend-jar
+        path: ./artifacts/backend
+
+    - name: Download frontend artifacts
+      uses: actions/download-artifact@v4
+      with:
+        name: frontend-build
+        path: ./artifacts/frontend
+
     - name: Deploy to production
       run: |
-        echo "Deploying to production..."
-        echo "Backend image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-backend:${{ github.sha }}"
-        echo "Frontend image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-frontend:${{ github.sha }}"
-        # Add your deployment commands here
-        # Examples:
-        # - Deploy to cloud provider (AWS, GCP, Azure)
-        # - Deploy to Kubernetes
-        # - Deploy to Docker Swarm
-        # - Deploy to VPS using SSH
+        echo "🚀 Starting production deployment..."
+        echo "📦 Backend JAR: $(ls -la ./artifacts/backend/)"
+        echo "📦 Frontend build: $(ls -la ./artifacts/frontend/)"
+        echo ""
+        echo "✅ Artifacts ready for deployment!"
+        echo "📋 Next steps:"
+        echo "   1. Upload backend JAR to your server"
+        echo "   2. Upload frontend build files to your web server"
+        echo "   3. Configure your production database"
+        echo "   4. Set up reverse proxy (nginx/apache)"
+        echo "   5. Configure SSL certificates"
 
-    - name: Notify deployment success
+    - name: Deployment success notification
       run: |
-        echo "✅ Deployment completed successfully!"
-        echo "🚀 Social Media Platform is now live!"
+        echo "🎉 CI/CD Pipeline completed successfully!"
+        echo "📱 Social Media Platform artifacts are ready for deployment!"
+        echo "🔗 Check the Actions tab for downloadable artifacts"
