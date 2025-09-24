@@ -22,11 +22,11 @@ function ExamplePost() {
       <div style={{margin:'8px 0'}}>
         <img src="/images/harryporter.jpg" alt="post" style={{maxWidth:'100%', borderRadius:8}} onError={(e)=>{ e.currentTarget.src='/images/pic.jpg'; }} />
         {/* To demo video instead of image, comment the img above and uncomment below if /videos/f1.mp4 exists */}
-        {false && (
-          <video controls style={{maxWidth:'100%', borderRadius:8}}>
-            <source src="/videos/f1.mp4" type="video/mp4" />
-          </video>
-        )}
+        {/* Video demo - uncomment when video file exists
+        <video controls style={{maxWidth:'100%', borderRadius:8}}>
+          <source src="/videos/f1.mp4" type="video/mp4" />
+        </video>
+        */}
       </div>
       <div>
         <button onClick={()=>setLikes(likes+1)}>Like ({likes})</button>
@@ -44,12 +44,12 @@ function ExamplePost() {
   );
 }
 
-function PostItem({p, refresh}) {
+function PostItem({p}) {
   const [comment, setComment] = useState('');
   const [likes, setLikes] = useState(0);
   const [comments, setComments] = useState([]);
 
-  useEffect(()=>{ api.get(`/posts/${p.id}/likes`).then(r=>setLikes(r.data.likes)).catch(()=>{}); api.get(`/posts/${p.id}/comments`).then(r=>setComments(r.data)).catch(()=>{}); },[]);
+  useEffect(()=>{ api.get(`/posts/${p.id}/likes`).then(r=>setLikes(r.data.likes)).catch(()=>{}); api.get(`/posts/${p.id}/comments`).then(r=>setComments(r.data)).catch(()=>{}); },[p.id]);
 
   const submitComment = async () => {
     const user = JSON.parse(localStorage.getItem('voxora_user') || 'null');
@@ -111,7 +111,7 @@ export default function Feed(){
       </form>
 
       <div style={{marginTop:20}}>
-        {posts.map(p=> <PostItem key={p.id} p={p} refresh={fetch} />)}
+        {posts.map(p=> <PostItem key={p.id} p={p} />)}
       </div>
     </div>
   );
