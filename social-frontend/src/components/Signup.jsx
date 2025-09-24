@@ -9,6 +9,8 @@ function Signup() {
   const [email, setEmail] = useState('');
   const [dob, setDob] = useState('');
   const [password, setPassword] = useState('');
+  const [message, setMessage] = useState('');
+  
   // OTP functionality - to be implemented
   // const [otpSent, setOtpSent] = useState(false);
   // const [enteredOtp, setEnteredOtp] = useState('');
