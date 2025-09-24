@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: social-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: SocialMedia
+      MYSQL_USER: socialuser
+      MYSQL_PASSWORD: socialpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./social-backend/src/main/resources/init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - social-network
+    restart: unless-stopped
+
+  # Backend Service
+  backend:
+    build:
+      context: ./social-backend
+      dockerfile: Dockerfile
+    container_name: social-backend
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/SocialMedia
+      SPRING_DATASOURCE_USERNAME: socialuser
+      SPRING_DATASOURCE_PASSWORD: socialpass
+      SPRING_MAIL_HOST: ${MAIL_HOST:-smtp.gmail.com}
+      SPRING_MAIL_PORT: ${MAIL_PORT:-587}
+      SPRING_MAIL_USERNAME: ${MAIL_USERNAME}
+      SPRING_MAIL_PASSWORD: ${MAIL_PASSWORD}
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - social-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./social-frontend
+      dockerfile: Dockerfile
+    container_name: social-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - social-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  mysql_data:
+
+networks:
+  social-network:
+    driver: bridge
