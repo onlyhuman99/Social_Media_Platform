@@ -1,0 +1,14 @@
+# Ignore Eclipse metadata and junk
+.metadata/
+bin/
+.settings/
+.classpath
+.project
+
+# Ignore build outputs
+/build/
+/target/
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db

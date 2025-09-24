@@ -1,0 +1,73 @@
+.body1 {
+  background-color: #f5f5dc;
+  padding: 2rem;
+  flex-grow: 1;
+  grid-column: 2/4;
+  grid-row: 2/3;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.pp {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.friend-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(to right, #fff8ee, #f3e5d3);
+  padding: 1.2rem 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.friend-row:hover {
+  transform: scale(1.01);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.friend-row img {
+  border-radius: 50%;
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
+  border: 3px solid #d4c0a1;
+  margin-right: 1.5rem;
+}
+
+.friend-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.friend-info p {
+  font-size: 20px;
+  font-weight: 600;
+  color: #4e3e2a;
+  margin: 0;
+}
+
+.friend-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.friend-row button {
+  background-color: #a87954;
+  color: white;
+  border: none;
+  padding: 8px 18px;
+  font-size: 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.friend-row button:hover {
+  background-color: #8d6645;
+}

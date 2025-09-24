@@ -1,0 +1,60 @@
+.settings-container {
+  background-color: #f5f5dc;
+  padding: 2rem;
+  font-family: 'Georgia', serif;
+  flex-grow: 1;
+}
+
+.settings-container h2 {
+  font-size: 32px;
+  margin-bottom: 1.5rem;
+}
+
+.settings-section {
+  margin-bottom: 2rem;
+}
+
+.settings-section h4 {
+  font-size: 20px;
+  color: #333;
+  margin-bottom: 0.5rem;
+}
+
+.settings-section ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.settings-section li {
+  background-color: white;
+  border: 1px solid #ddd;
+  padding: 12px 16px;
+  font-size: 16px;
+  border-radius: 8px;
+  margin-bottom: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.settings-section li:hover {
+  background-color: #eee;
+}
+
+.settings-section li span {
+  color: #999;
+  font-weight: bold;
+}
+
+.logout {
+  color: red;
+  font-weight: bold;
+  text-align: center;
+}
+.settings-container{
+    grid-row: 2/2;
+    grid-column: 2/4;
+}
